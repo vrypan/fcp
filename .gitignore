@@ -27,3 +27,6 @@ go.work.sum
 
 tmp/
 dist/
+
+# fckn .DS_Store
+.DS_Store

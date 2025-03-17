@@ -32,8 +32,18 @@ func Download(hubAddress string, username string, localFile string, opts map[str
 	} else {
 		fid = retrievedFid
 	}
-
-	outfile, err := os.OpenFile(localFile, os.O_WRONLY|os.O_CREATE, 0600)
+	var err error
+	var outfile *os.File
+	if localFile == "-" {
+		outfile = os.Stdout
+	} else {
+		outfile, err = os.OpenFile(localFile, os.O_WRONLY|os.O_CREATE, 0600)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		defer outfile.Close()
+	}
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -91,12 +101,17 @@ func Upload(hubAddress string, localFile string, opts map[string]any) {
 		}
 	}
 
-	f, err := os.Open(localFile)
-	if err != nil {
-		fmt.Println(err)
-		return
+	var f *os.File
+	if localFile == "-" {
+		f = os.Stdin
+	} else {
+		f, err = os.Open(localFile)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		defer f.Close()
 	}
-	defer f.Close()
 
 	count := 0
 	errorCount := 0

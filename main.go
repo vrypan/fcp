@@ -96,6 +96,7 @@ func fcpCmdMain(cmd *cobra.Command, args []string) {
 		}
 		opts := map[string]any{}
 		opts["ssl"] = useSsl
+		opts["pageSize"], _ = cmd.Flags().GetUint32("page-size")
 		utils.Download(hubAddress, username[1:], args[1], opts)
 	}
 

@@ -90,6 +90,7 @@ func fcpCmdMain(cmd *cobra.Command, args []string) {
 		opts := map[string]any{}
 		opts["ssl"] = useSsl
 		opts["signer"], _ = cmd.Flags().GetString("app-key")
+		opts["json"], _ = cmd.Flags().GetBool("json")
 		utils.Upload(hubAddress, args[0], opts)
 	} else {
 		if h, _, _, err := utils.ParseUrl(args[1]); h != "" || err != nil {
@@ -99,6 +100,7 @@ func fcpCmdMain(cmd *cobra.Command, args []string) {
 		opts := map[string]any{}
 		opts["ssl"] = useSsl
 		opts["pageSize"], _ = cmd.Flags().GetUint32("page-size")
+		opts["json"], _ = cmd.Flags().GetBool("json")
 		utils.Download(hubAddress, username[1:], args[1], opts)
 	}
 
@@ -109,5 +111,6 @@ func init() {
 	rootCmd.Flags().StringP("app-key", "k", "", "App key (signer)")
 	rootCmd.Flags().BoolP("inspect", "i", false, "Inspect a local fcp file")
 	rootCmd.Flags().BoolP("stats", "s", false, "Display stats")
+	rootCmd.Flags().BoolP("json", "j", false, "Read/write data to file in json")
 	rootCmd.Flags().BoolP("version", "v", false, "Display fcp version")
 }

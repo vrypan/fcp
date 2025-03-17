@@ -22,7 +22,7 @@ func Inspect(filename string, opts map[string]any) {
 	count := 0
 	dataTypes := make(map[int]int)
 	for {
-		messages, err := ReadData(f)
+		messages, err := ReadBinaryData(f, nil)
 		if err != nil {
 			if err == io.EOF {
 				break

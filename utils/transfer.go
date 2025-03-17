@@ -27,7 +27,7 @@ func Download(hubAddress string, username string, localFile string, opts map[str
 	if fidInt, err := strconv.Atoi(username); err == nil {
 		fid = uint64(fidInt)
 	} else if retrievedFid, err := hub.GetFidByUsername(username); err != nil {
-		fmt.Printf("Error getting fid: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Error getting fid: %v\n", err)
 		return
 	} else {
 		fid = retrievedFid
@@ -37,9 +37,9 @@ func Download(hubAddress string, username string, localFile string, opts map[str
 	if localFile == "-" {
 		outfile = os.Stdout
 	} else {
-		outfile, err = os.OpenFile(localFile, os.O_WRONLY|os.O_CREATE, 0600)
+		outfile, err = os.OpenFile(localFile, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
 		if err != nil {
-			fmt.Println(err)
+			fmt.Fprintln(os.Stderr, err)
 			return
 		}
 		defer outfile.Close()
@@ -62,25 +62,28 @@ func Download(hubAddress string, username string, localFile string, opts map[str
 		for {
 			response, err := hubFunction(fid, pageToken, pageSize)
 			if err != nil {
-				fmt.Println(err)
+				fmt.Fprintln(os.Stderr, err)
 				return
 			}
-			if err := WriteData(outfile, response); err != nil {
-				fmt.Println()
-				fmt.Println(err)
-				fmt.Println()
+			if err := WriteData(outfile, response, opts); err != nil {
+				fmt.Fprintln(os.Stderr, err)
 				return
 			}
 			count += len(response.Messages)
 
 			nextStr := base64.StdEncoding.EncodeToString(response.NextPageToken)
-			fmt.Printf("\033[2K\r... Saving %06d %-12s %s", count, messageType, nextStr)
+			if localFile != "-" {
+				fmt.Printf("\033[2K\r... Saving %06d %-12s %s", count, messageType, nextStr)
+			}
+
 			if len(response.NextPageToken) == 0 {
 				break
 			}
 			pageToken = response.NextPageToken
 		}
-		fmt.Println("Done.")
+		if localFile != "-" {
+			fmt.Println("Done.")
+		}
 	}
 }
 
@@ -107,7 +110,7 @@ func Upload(hubAddress string, localFile string, opts map[string]any) {
 	} else {
 		f, err = os.Open(localFile)
 		if err != nil {
-			fmt.Println(err)
+			fmt.Fprintln(os.Stderr, err)
 			return
 		}
 		defer f.Close()
@@ -117,7 +120,7 @@ func Upload(hubAddress string, localFile string, opts map[string]any) {
 	errorCount := 0
 	successCount := 0
 	for {
-		messages, err := ReadData(f)
+		messages, err := ReadBinaryData(f, opts)
 		if err != nil {
 			if err == io.EOF {
 				break

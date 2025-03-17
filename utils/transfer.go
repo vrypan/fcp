@@ -9,8 +9,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/vrypan/fckup/farcaster"
-	"github.com/vrypan/fckup/fctools"
+	"github.com/vrypan/fcp/farcaster"
+	"github.com/vrypan/fcp/fctools"
 )
 
 func Download(hubAddress string, username string, localFile string, opts map[string]any) {

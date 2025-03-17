@@ -15,10 +15,9 @@ farcaster-go: $(wildcard schemas/*.proto)
 	schemas/*.proto
 
 local:
-	@echo Building tcp v${FCP_VER}
+	@echo Building fcp ${FCP_VER}
 	go build \
-	-ldflags "-w -s" \
-	-ldflags "-X github.com/vrypan/fcp/main.FCP_VERSION=${FCP_VER}" \
+	-ldflags "-w -s -X main.FCP_VERSION=${FCP_VER}" \
 	-o fcp
 
 release-notes:

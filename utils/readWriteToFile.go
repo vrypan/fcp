@@ -4,7 +4,7 @@ import (
 	"encoding/binary"
 	"os"
 
-	"github.com/vrypan/fckup/farcaster"
+	"github.com/vrypan/fcp/farcaster"
 	"google.golang.org/protobuf/proto"
 )
 

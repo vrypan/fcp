@@ -24,7 +24,7 @@ builds:
       - darwin
     ldflags:
       - -s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}} -X main.builtBy=goreleaser
-      - -X github.com/vrypan/fckup/config.FCKUP_VERSION={{.Version}}
+      - -X main.FCP_VERSION={{.Version}}
 
 archives:
   - formats: ["tar.gz"]
@@ -59,7 +59,7 @@ brews:
     #
     # Default depends on the client.
     # Templates: allowed.
-    url_template: "https://github.com/vrypan/fckup/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
+    url_template: "https://github.com/vrypan/fcp/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
 
     # Headers to include in the `url` stanza.
     # This can be a more modern alternative to `download_strategy` in some
@@ -82,18 +82,18 @@ brews:
     directory: Formula
 
     # Caveats for the user of your binary.
-    caveats: "fckup --help"
+    caveats: "fcp --help"
 
     # Your app's homepage.
     #
     # Default: inferred from global metadata.
-    homepage: "https://github.com/vrypan/fckup"
+    homepage: "https://github.com/vrypan/fcp"
 
     # Your app's description.
     #
     # Templates: allowed.
     # Default: inferred from global metadata.
-    description: "fckup is a Farcaster backup and restore tool."
+    description: "Copy data from/to farcaster and the local filesystem"
 
     # SPDX identifier of your app's license.
     #
@@ -116,7 +116,7 @@ brews:
     #
     # Template: allowed
     test: |
-      system "#{bin}/fckup version"
+      system "#{bin}/fcp version"
 
     # Repository to push the generated files to.
     repository:
@@ -128,7 +128,7 @@ brews:
       # Repository name.
       #
       # Templates: allowed.
-      name: homebrew-fckup
+      name: homebrew-fcp
 
       # Optionally a branch can be provided.
       #

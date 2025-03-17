@@ -9,7 +9,7 @@ import (
 	"crypto/ed25519"
 	"encoding/json"
 
-	pb "github.com/vrypan/fckup/farcaster"
+	pb "github.com/vrypan/fcp/farcaster"
 	"github.com/zeebo/blake3"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"

@@ -1,4 +1,4 @@
-module github.com/vrypan/fckup
+module github.com/vrypan/fcp
 
 go 1.23.4
 

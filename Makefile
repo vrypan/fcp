@@ -1,5 +1,5 @@
 HUBBLE_VER := "1.19.1"
-FKCKUP_VER := $(shell git describe --tags 2>/dev/null || echo "v0.0.0")
+FCP_VER := $(shell git describe --tags 2>/dev/null || echo "v0.0.0")
 
 all:
 
@@ -8,17 +8,18 @@ proto:
 	| tar -zxvf - -C . --strip-components 2 hub-monorepo--farcaster-hubble-${HUBBLE_VER}/protobufs/schemas/
 
 farcaster-go: $(wildcard schemas/*.proto)
+	@echo "Compiling .proto files"
 	protoc --proto_path=schemas --go_out=. \
 	$(shell cd schemas; ls | xargs -I \{\} echo -n '--go_opt=M'{}=farcaster/" " '--go-grpc_opt=M'{}=farcaster/" " ) \
 	--go-grpc_out=. \
 	schemas/*.proto
 
 local:
-	@echo Building fckup v${FCKUP_VER}
+	@echo Building tcp v${FCP_VER}
 	go build \
 	-ldflags "-w -s" \
-	-ldflags "-X github.com/vrypan/fckup/config.FCKUP_VERSION=${FCKUP_VER}" \
-	-o fckup
+	-ldflags "-X github.com/vrypan/fcp/main.FCP_VERSION=${FCP_VER}" \
+	-o fcp
 
 release-notes:
 	# Autmatically generate release_notes.md

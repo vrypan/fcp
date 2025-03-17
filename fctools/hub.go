@@ -125,26 +125,26 @@ func (hub FarcasterHub) GetFidByUsername(username string) (uint64, error) {
 	return message.Fid, nil
 }
 
-func (hub FarcasterHub) GetCastsByFid(fid uint64, start []byte, pageSize uint32) ([]*pb.Message, []byte, error) {
+func (hub FarcasterHub) GetCastsByFid(fid uint64, start []byte, pageSize uint32) (*pb.MessagesResponse, error) {
 	reverse := true
 	msg, err := hub.client.GetCastsByFid(hub.ctx, &pb.FidRequest{Fid: fid, Reverse: &reverse, PageSize: &pageSize, PageToken: start})
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
-	return msg.Messages, msg.NextPageToken, nil
+	return msg, nil
 }
 
-func (hub FarcasterHub) GetReactionsByFid(fid uint64, start []byte, pageSize uint32) ([]*pb.Message, []byte, error) {
+func (hub FarcasterHub) GetReactionsByFid(fid uint64, start []byte, pageSize uint32) (*pb.MessagesResponse, error) {
 	reverse := true
 	msg, err := hub.client.GetReactionsByFid(hub.ctx,
 		&pb.ReactionsByFidRequest{Fid: fid, Reverse: &reverse, PageSize: &pageSize, PageToken: start},
 	)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
-	return msg.Messages, msg.NextPageToken, nil
+	return msg, nil
 }
-func (hub FarcasterHub) GetLinksByFid(fid uint64, start []byte, pageSize uint32) ([]*pb.Message, []byte, error) {
+func (hub FarcasterHub) GetLinksByFid(fid uint64, start []byte, pageSize uint32) (*pb.MessagesResponse, error) {
 	reverse := true
 	msg, err := hub.client.GetLinksByFid(hub.ctx, &pb.LinksByFidRequest{
 		Fid:       fid,
@@ -154,9 +154,9 @@ func (hub FarcasterHub) GetLinksByFid(fid uint64, start []byte, pageSize uint32)
 	})
 	//msg, err := hub.client.GetCastsByFid(hub.ctx, &pb.FidRequest{Fid: fid, Reverse: &reverse, PageSize: &pageSize, PageToken: start})
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
-	return msg.Messages, msg.NextPageToken, nil
+	return msg, nil
 }
 func (hub FarcasterHub) GetCast(fid uint64, hash []byte) (*pb.Message, error) {
 	return hub.client.GetCast(hub.ctx, &pb.CastId{Fid: fid, Hash: hash})
@@ -171,4 +171,18 @@ func (hub FarcasterHub) GetCastReplies(fid uint64, hash []byte) (*pb.MessagesRes
 			},
 		},
 	)
+}
+
+func ResignMessage(message *pb.Message, signerPrivate []byte) *pb.Message {
+	if message.SignatureScheme != pb.SignatureScheme(pb.SignatureScheme_value["SIGNATURE_SCHEME_ED25519"]) {
+		fmt.Println("Not ED25519???")
+		return message
+	}
+	signer := ed25519.NewKeyFromSeed(signerPrivate)
+	hash := message.Hash
+	signature := ed25519.Sign(signer, hash)
+	message.Signature = signature
+	message.Signer = signer.Public().(ed25519.PublicKey)
+
+	return message
 }

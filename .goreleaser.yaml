@@ -16,7 +16,10 @@ before:
     - go generate ./...
 
 builds:
-  - env:
+  - id: fcp
+    main: ./cmd/fcp/main.go
+    binary: fcp
+    env:
       - CGO_ENABLED=0
     goos:
       - linux
@@ -25,6 +28,19 @@ builds:
     ldflags:
       - -s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}} -X main.builtBy=goreleaser
       - -X main.FCP_VERSION={{.Version}}
+
+  - id: fcp-inspect
+    main: ./cmd/fcp-inspect/main.go
+    binary: fcp-inspect
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - windows
+      - darwin
+    ldflags:
+      - -s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}} -X main.builtBy=goreleaser
+        - -X main.FCP_VERSION={{.Version}}
 
 archives:
   - formats: ["tar.gz"]
@@ -82,7 +98,10 @@ brews:
     directory: Formula
 
     # Caveats for the user of your binary.
-    caveats: "fcp --help"
+    caveats: |
+      Both binaries have been installed:
+        - fcp → `fcp --help`
+        - fcp-inspect → `fcp-inspect --help`
 
     # Your app's homepage.
     #
@@ -109,6 +128,9 @@ brews:
     # Templates: allowed.
     skip_upload: auto
 
+    install: |
+      bin.install "fcp"
+      bin.install "fcp-inspect"
     # Custom block for brew.
     # Can be used to specify alternate downloads for devel or head releases.
 
@@ -116,7 +138,8 @@ brews:
     #
     # Template: allowed
     test: |
-      system "#{bin}/fcp version"
+      system "#{bin}/fcp --version"
+      system "#{bin}/fcp-inspect --version"
 
     # Repository to push the generated files to.
     repository:

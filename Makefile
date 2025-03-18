@@ -3,6 +3,9 @@ FCP_VER := $(shell git describe --tags 2>/dev/null || echo "v0.0.0")
 
 BINS = fcp fcp-inspect
 PROTO_FILES := $(wildcard schemas/*.proto)
+COMMON_SOURCES := $(wildcard utils/*.go)
+FCP_SOURCES := $(wildcard cmd/fcp/*.go)
+FCP_INSPECT_SOURCES := $(wildcard cmd/fcp-inspect/*.go)
 
 # Colors for output
 GREEN = \033[0;32m
@@ -35,8 +38,12 @@ clean:
 
 .PHONY: all proto clean local release-notes tag tag-minor tag-major releases
 
-$(BINS): .farcaster-built
+fcp: .farcaster-built $(FCP_SOURCES) $(COMMON_SOURCES)
 	@echo -e "$(GREEN)Building fcp ${FCP_VER} $(NC)"
+	go build -o $@ -ldflags "-w -s -X main.FCP_VERSION=${FCP_VER}" ./cmd/$@
+
+fcp-inspect: .farcaster-built $(FCP_INSPECT_SOURCES) $(COMMON_SOURCES)
+	@echo -e "$(GREEN)Building fcp-inspect ${FCP_VER} $(NC)"
 	go build -o $@ -ldflags "-w -s -X main.FCP_VERSION=${FCP_VER}" ./cmd/$@
 
 release-notes:

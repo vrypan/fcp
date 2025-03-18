@@ -12,10 +12,15 @@ import (
 func Inspect(filename string, opts map[string]any) {
 	stats := opts["stats"].(bool)
 
-	f, err := os.Open(filename)
-	if err != nil {
-		fmt.Println(err)
-		return
+	var f *os.File
+	if filename == "-" {
+		f = os.Stdin
+	} else {
+		var err error
+		if f, err = os.Open(filename); err != nil {
+			fmt.Println(err)
+			return
+		}
 	}
 	defer f.Close()
 

@@ -21,8 +21,14 @@ func Inspect(filename string, opts map[string]any) {
 
 	count := 0
 	dataTypes := make(map[int]int)
+
+	allowedType := make(map[farcaster.MessageType]bool)
+	allowedType[farcaster.MessageType_MESSAGE_TYPE_CAST_ADD] = opts["casts"].(bool)
+	allowedType[farcaster.MessageType_MESSAGE_TYPE_REACTION_ADD] = opts["reactions"].(bool)
+	allowedType[farcaster.MessageType_MESSAGE_TYPE_LINK_ADD] = opts["links"].(bool)
+
 	for {
-		messages, err := ReadBinaryData(f, nil)
+		messages, err := ReadData(f, nil)
 		if err != nil {
 			if err == io.EOF {
 				break
@@ -31,7 +37,7 @@ func Inspect(filename string, opts map[string]any) {
 		}
 		count += len(messages.Messages)
 		dataTypes[int(messages.Messages[0].Data.GetType())] += len(messages.Messages)
-		if !stats {
+		if !stats && allowedType[messages.Messages[0].Data.GetType()] {
 			j, err := json.Marshal(messages.Messages)
 			if err != nil {
 				fmt.Println(err)

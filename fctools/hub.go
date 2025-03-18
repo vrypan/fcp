@@ -14,6 +14,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -34,7 +35,6 @@ func NewFarcasterHub(
 	hubAddress string,
 	useSsl bool,
 ) *FarcasterHub {
-
 	cred := insecure.NewCredentials()
 
 	if useSsl {
@@ -46,9 +46,8 @@ func NewFarcasterHub(
 		log.Fatalf("Did not connect: %v", err)
 	}
 	client := pb.NewHubServiceClient(conn)
-	//md := metadata.New(map[string]string{"x-api-key": "YOUR_NEYNAR_API_KEY"})
-
 	ctx, cancel := context.WithCancel(context.Background())
+
 	//ctx = metadata.AppendToOutgoingContext(ctx, "x-api-key", "NEYNAR_API_DOCS_BAD")
 	return &FarcasterHub{
 		hubAddr:    hubAddress,
@@ -185,4 +184,30 @@ func ResignMessage(message *pb.Message, signerPrivate []byte) *pb.Message {
 	message.Signer = signer.Public().(ed25519.PublicKey)
 
 	return message
+}
+
+func DefaultMetadataKeyInterceptor(key, value string) grpc.UnaryClientInterceptor {
+	return func(
+		ctx context.Context,
+		method string,
+		req, reply interface{},
+		cc *grpc.ClientConn,
+		invoker grpc.UnaryInvoker,
+		opts ...grpc.CallOption,
+	) error {
+		// Inject metadata
+		md, ok := metadata.FromOutgoingContext(ctx)
+		if !ok {
+			md = metadata.New(nil)
+		} else {
+			md = md.Copy()
+		}
+		md.Append(key, value)
+
+		// Create new context with metadata
+		ctx = metadata.NewOutgoingContext(ctx, md)
+
+		// Proceed with the request
+		return invoker(ctx, method, req, reply, cc, opts...)
+	}
 }

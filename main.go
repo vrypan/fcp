@@ -59,6 +59,11 @@ func fcpCmdMain(cmd *cobra.Command, args []string) {
 	if inspect {
 		opts := map[string]any{}
 		opts["stats"], _ = cmd.Flags().GetBool("stats")
+		opts["pageSize"], _ = cmd.Flags().GetUint32("page-size")
+		opts["signer"], _ = cmd.Flags().GetString("app-key")
+		opts["reactions"], _ = cmd.Flags().GetBool("reactions")
+		opts["links"], _ = cmd.Flags().GetBool("links")
+		opts["casts"], _ = cmd.Flags().GetBool("casts")
 		utils.Inspect(args[0], opts)
 		return
 	}
@@ -89,8 +94,11 @@ func fcpCmdMain(cmd *cobra.Command, args []string) {
 		}
 		opts := map[string]any{}
 		opts["ssl"] = useSsl
+		opts["pageSize"], _ = cmd.Flags().GetUint32("page-size")
 		opts["signer"], _ = cmd.Flags().GetString("app-key")
-		opts["json"], _ = cmd.Flags().GetBool("json")
+		opts["reactions"], _ = cmd.Flags().GetBool("reactions")
+		opts["links"], _ = cmd.Flags().GetBool("links")
+		opts["casts"], _ = cmd.Flags().GetBool("casts")
 		utils.Upload(hubAddress, args[0], opts)
 	} else {
 		if h, _, _, err := utils.ParseUrl(args[1]); h != "" || err != nil {
@@ -100,7 +108,10 @@ func fcpCmdMain(cmd *cobra.Command, args []string) {
 		opts := map[string]any{}
 		opts["ssl"] = useSsl
 		opts["pageSize"], _ = cmd.Flags().GetUint32("page-size")
-		opts["json"], _ = cmd.Flags().GetBool("json")
+		opts["signer"], _ = cmd.Flags().GetString("app-key")
+		opts["reactions"], _ = cmd.Flags().GetBool("reactions")
+		opts["links"], _ = cmd.Flags().GetBool("links")
+		opts["casts"], _ = cmd.Flags().GetBool("casts")
 		utils.Download(hubAddress, username[1:], args[1], opts)
 	}
 
@@ -111,6 +122,8 @@ func init() {
 	rootCmd.Flags().StringP("app-key", "k", "", "App key (signer)")
 	rootCmd.Flags().BoolP("inspect", "i", false, "Inspect a local fcp file")
 	rootCmd.Flags().BoolP("stats", "s", false, "Display stats")
-	rootCmd.Flags().BoolP("json", "j", false, "Read/write data to file in json")
+	rootCmd.Flags().Bool("casts", true, "Read/write casts")
+	rootCmd.Flags().Bool("reactions", true, "Read/write reactions (likes, recasts)")
+	rootCmd.Flags().Bool("links", true, "Read/write links (follows)")
 	rootCmd.Flags().BoolP("version", "v", false, "Display fcp version")
 }

@@ -57,6 +57,9 @@ func Download(hubAddress string, username string, localFile string, opts map[str
 	}
 
 	for messageType, hubFunction := range performDataFetch {
+		if !opts[messageType].(bool) {
+			continue
+		}
 		pageToken := []byte{}
 		count := 0
 		for {
@@ -119,16 +122,25 @@ func Upload(hubAddress string, localFile string, opts map[string]any) {
 	count := 0
 	errorCount := 0
 	successCount := 0
+	allowedType := make(map[farcaster.MessageType]bool)
+	allowedType[farcaster.MessageType_MESSAGE_TYPE_CAST_ADD] = opts["casts"].(bool)
+	allowedType[farcaster.MessageType_MESSAGE_TYPE_REACTION_ADD] = opts["reactions"].(bool)
+	allowedType[farcaster.MessageType_MESSAGE_TYPE_LINK_ADD] = opts["links"].(bool)
 	for {
-		messages, err := ReadBinaryData(f, opts)
+		var messages *farcaster.MessagesResponse
+		messages, err = ReadData(f, opts)
 		if err != nil {
 			if err == io.EOF {
 				break
 			}
+			fmt.Fprintln(os.Stderr, err)
 			return
 		}
 		count += len(messages.Messages)
 		for _, m := range messages.Messages {
+			if !allowedType[m.Data.GetType()] {
+				continue
+			}
 			if len(signer) != 0 {
 				m = fctools.ResignMessage(m, signer)
 			}

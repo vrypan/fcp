@@ -13,7 +13,7 @@ before:
     # You may remove this if you don't use go modules.
     - go mod tidy
     # you may remove this if you don't need go generate
-    - go generate ./...
+    # - go generate ./...
 
 builds:
   - id: fcp
@@ -40,7 +40,7 @@ builds:
       - darwin
     ldflags:
       - -s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}} -X main.builtBy=goreleaser
-        - -X main.FCP_VERSION={{.Version}}
+      - -X main.FCP_VERSION={{.Version}}
 
 archives:
   - formats: ["tar.gz"]

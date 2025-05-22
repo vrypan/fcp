@@ -1,9 +1,9 @@
-HUBBLE_VER := 1.19.1
+SNAPCHAIN_VER := 0.2.20
 FCP_VER := $(shell git describe --tags 2>/dev/null || echo "v0.0.0")
 
 BINS = fcp fcp-inspect
 PROTO_FILES := $(wildcard schemas/*.proto)
-COMMON_SOURCES := $(wildcard utils/*.go)
+COMMON_SOURCES := $(wildcard utils/*.go fctools/*.go)
 FCP_SOURCES := $(wildcard cmd/fcp/*.go)
 FCP_INSPECT_SOURCES := $(wildcard cmd/fcp-inspect/*.go)
 
@@ -19,18 +19,23 @@ all: $(BINS)
 #	go build -o $@ ./cmd/$@
 
 # Compile .proto files, touch stamp file
-.farcaster-built: $(PROTO_FILES)
+.farcaster-built: $(PROTO_FILES) .protobufs-downloaded
 	@echo -e "$(GREEN)Compiling .proto files...$(NC)"
-	protoc --proto_path=schemas --go_out=. \
-	$(shell cd schemas; ls | xargs -I \{\} echo -n '--go_opt=M'{}=farcaster/" " '--go-grpc_opt=M'{}=farcaster/" " ) \
+	protoc --proto_path=proto --go_out=. \
+	$(shell cd proto; ls | xargs -I \{\} echo -n '--go_opt=M'{}=farcaster/" " '--go-grpc_opt=M'{}=farcaster/" " ) \
 	--go-grpc_out=. \
-	schemas/*.proto
+	proto/*.proto
 	@touch .farcaster-built
 
-proto:
-	@echo -e "$(GREEN)Downloading proto files (Hubble v$(HUBBLE_VER))...$(NC)"
-	curl -s -L "https://github.com/farcasterxyz/hub-monorepo/archive/refs/tags/@farcaster/hubble@$(HUBBLE_VER).tar.gz" \
-	| tar -zxvf - -C . --strip-components 2 "hub-monorepo--farcaster-hubble-$(HUBBLE_VER)/protobufs/schemas/"
+.protobufs-downloaded:
+	@echo -e "$(GREEN)Downloading proto files (Hubble v$(SNAPCHAIN_VER))...$(NC)"
+	curl -s -L "https://codeload.github.com/farcasterxyz/snapchain/tar.gz/refs/tags/v$(SNAPCHAIN_VER)" \
+	| tar -zxvf - -C . --strip-components 2 "snapchain-$(SNAPCHAIN_VER)/src/proto/"
+	@touch .protobufs-downloaded
+
+clean-proto:
+	@echo -e "$(GREEN)Cleaning up protobuf definitions...$(NC)"
+	rm -f $(BINS) proto/*.proto .protobufs-downloaded
 
 clean:
 	@echo -e "$(GREEN)Cleaning up...$(NC)"

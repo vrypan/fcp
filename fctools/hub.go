@@ -4,10 +4,11 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"time"
 
 	//"time"
 	"crypto/ed25519"
-	"encoding/json"
+	"crypto/tls"
 
 	pb "github.com/vrypan/fcp/farcaster"
 	"github.com/zeebo/blake3"
@@ -35,20 +36,25 @@ func NewFarcasterHub(
 	hubAddress string,
 	useSsl bool,
 ) *FarcasterHub {
-	cred := insecure.NewCredentials()
 
+	hubRpcEndpoint := hubAddress
+
+	var creds credentials.TransportCredentials
 	if useSsl {
-		cred = credentials.NewClientTLSFromCert(nil, "")
+		creds = credentials.NewTLS(&tls.Config{})
+	} else {
+		creds = insecure.NewCredentials()
 	}
 
-	conn, err := grpc.DialContext(context.Background(), hubAddress, grpc.WithTransportCredentials(cred))
+	conn, err := grpc.Dial(hubRpcEndpoint, grpc.WithTransportCredentials(creds), grpc.WithDefaultServiceConfig(`{"loadBalancingPolicy":"round_robin"}`))
 	if err != nil {
-		log.Fatalf("Did not connect: %v", err)
+		log.Fatalf("failed to initialize gRPC connection: %v", err)
 	}
-	client := pb.NewHubServiceClient(conn)
-	ctx, cancel := context.WithCancel(context.Background())
 
-	//ctx = metadata.AppendToOutgoingContext(ctx, "x-api-key", "NEYNAR_API_DOCS_BAD")
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+
+	client := pb.NewHubServiceClient(conn)
+
 	return &FarcasterHub{
 		hubAddr:    hubAddress,
 		conn:       conn,
@@ -61,16 +67,6 @@ func NewFarcasterHub(
 func (h FarcasterHub) Close() {
 	h.conn.Close()
 	h.ctx_cancel()
-}
-
-func (hub FarcasterHub) HubInfo() ([]byte, error) {
-	res, err := hub.client.GetInfo(hub.ctx, &pb.HubInfoRequest{DbStats: false})
-	if err != nil {
-		log.Fatalf("could not get HubInfo: %v", err)
-		return nil, err
-	}
-	b, err := json.Marshal(res)
-	return b, err
 }
 
 func (hub FarcasterHub) SubmitMessageData(messageData *pb.MessageData, signerPrivate, signerPublic []byte) (*pb.Message, error) {
@@ -126,7 +122,11 @@ func (hub FarcasterHub) GetFidByUsername(username string) (uint64, error) {
 
 func (hub FarcasterHub) GetCastsByFid(fid uint64, start []byte, pageSize uint32) (*pb.MessagesResponse, error) {
 	reverse := true
-	msg, err := hub.client.GetCastsByFid(hub.ctx, &pb.FidRequest{Fid: fid, Reverse: &reverse, PageSize: &pageSize, PageToken: start})
+	fidRequest := &pb.FidRequest{Fid: fid, Reverse: &reverse, PageSize: &pageSize}
+	if len(start) > 0 {
+		fidRequest.PageToken = start
+	}
+	msg, err := hub.client.GetCastsByFid(hub.ctx, fidRequest)
 	if err != nil {
 		return nil, err
 	}
@@ -135,9 +135,11 @@ func (hub FarcasterHub) GetCastsByFid(fid uint64, start []byte, pageSize uint32)
 
 func (hub FarcasterHub) GetReactionsByFid(fid uint64, start []byte, pageSize uint32) (*pb.MessagesResponse, error) {
 	reverse := true
-	msg, err := hub.client.GetReactionsByFid(hub.ctx,
-		&pb.ReactionsByFidRequest{Fid: fid, Reverse: &reverse, PageSize: &pageSize, PageToken: start},
-	)
+	fidRequest := &pb.ReactionsByFidRequest{Fid: fid, Reverse: &reverse, PageSize: &pageSize}
+	if len(start) > 0 {
+		fidRequest.PageToken = start
+	}
+	msg, err := hub.client.GetReactionsByFid(hub.ctx, fidRequest)
 	if err != nil {
 		return nil, err
 	}
@@ -145,13 +147,11 @@ func (hub FarcasterHub) GetReactionsByFid(fid uint64, start []byte, pageSize uin
 }
 func (hub FarcasterHub) GetLinksByFid(fid uint64, start []byte, pageSize uint32) (*pb.MessagesResponse, error) {
 	reverse := true
-	msg, err := hub.client.GetLinksByFid(hub.ctx, &pb.LinksByFidRequest{
-		Fid:       fid,
-		Reverse:   &reverse,
-		PageSize:  &pageSize,
-		PageToken: start,
-	})
-	//msg, err := hub.client.GetCastsByFid(hub.ctx, &pb.FidRequest{Fid: fid, Reverse: &reverse, PageSize: &pageSize, PageToken: start})
+	fidRequest := &pb.LinksByFidRequest{Fid: fid, Reverse: &reverse, PageSize: &pageSize}
+	if len(start) > 0 {
+		fidRequest.PageToken = start
+	}
+	msg, err := hub.client.GetLinksByFid(hub.ctx, fidRequest)
 	if err != nil {
 		return nil, err
 	}

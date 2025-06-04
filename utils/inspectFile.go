@@ -6,7 +6,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/vrypan/fcp/farcaster"
+	"github.com/vrypan/farcaster-go/farcaster"
 )
 
 func Inspect(filename string, opts map[string]any) {

@@ -10,7 +10,7 @@ import (
 	"crypto/ed25519"
 	"crypto/tls"
 
-	pb "github.com/vrypan/fcp/farcaster"
+	pb "github.com/vrypan/farcaster-go/farcaster"
 	"github.com/zeebo/blake3"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"

@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/vrypan/fcp/farcaster"
+	"github.com/vrypan/farcaster-go/farcaster"
 	"github.com/vrypan/fcp/fctools"
 )
 
@@ -65,7 +65,6 @@ func Download(hubAddress string, username string, localFile string, opts map[str
 		count := 0
 		for {
 			response, err := hubFunction(fid, pageToken, pageSize)
-
 			if err != nil {
 				fmt.Fprintln(os.Stderr, err)
 				return

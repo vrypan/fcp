@@ -74,7 +74,9 @@ func fcpCmdMain(cmd *cobra.Command, args []string) {
 		}
 		opts := map[string]any{}
 		opts["ssl"] = useSsl
+		opts["hub-api-key"], _ = cmd.Flags().GetString("hub-api-key")
 		opts["pageSize"], _ = cmd.Flags().GetUint32("page-size")
+		opts["delay"], _ = cmd.Flags().GetInt("delay")
 		opts["signer"], _ = cmd.Flags().GetString("app-key")
 		opts["reactions"], _ = cmd.Flags().GetBool("reactions")
 		opts["links"], _ = cmd.Flags().GetBool("links")
@@ -87,19 +89,24 @@ func fcpCmdMain(cmd *cobra.Command, args []string) {
 		}
 		opts := map[string]any{}
 		opts["ssl"] = useSsl
+		opts["hub-api-key"], _ = cmd.Flags().GetString("hub-api-key")
 		opts["pageSize"], _ = cmd.Flags().GetUint32("page-size")
+		opts["delay"], _ = cmd.Flags().GetInt("delay")
 		opts["signer"], _ = cmd.Flags().GetString("app-key")
 		opts["reactions"], _ = cmd.Flags().GetBool("reactions")
 		opts["links"], _ = cmd.Flags().GetBool("links")
 		opts["casts"], _ = cmd.Flags().GetBool("casts")
+
 		utils.Download(hubAddress, username[1:], args[1], opts)
 	}
 
 }
 func init() {
 	//rootCmd.AddCommand(fcpCmd)
-	rootCmd.Flags().Uint32("page-size", 100, "Hub request page size")
+	rootCmd.Flags().Uint32("page-size", 1000, "Hub request page size")
+	rootCmd.Flags().Int("delay", 1, "Seconds to wait between requests")
 	rootCmd.Flags().StringP("app-key", "k", "", "App key (signer)")
+	rootCmd.Flags().String("hub-api-key", "", "API key required by the hub (ex. Neynar)")
 	rootCmd.Flags().BoolP("stats", "s", false, "Display stats")
 	rootCmd.Flags().Bool("casts", true, "Read/write casts")
 	rootCmd.Flags().Bool("reactions", true, "Read/write reactions (likes, recasts)")

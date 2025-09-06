@@ -8,6 +8,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/vrypan/farcaster-go/farcaster"
 	"github.com/vrypan/fcp/fctools"
@@ -19,8 +20,12 @@ func Download(hubAddress string, username string, localFile string, opts map[str
 	if !ok {
 		pageSize = 100
 	}
+	delay, ok := opts["delay"].(int)
+	if !ok {
+		delay = 0
+	}
 
-	hub := fctools.NewFarcasterHub(hubAddress, useSsl)
+	hub := fctools.NewFarcasterHub(hubAddress, useSsl, opts["hub-api-key"].(string))
 	defer hub.Close()
 
 	var fid uint64
@@ -84,6 +89,9 @@ func Download(hubAddress string, username string, localFile string, opts map[str
 				break
 			}
 			pageToken = response.NextPageToken
+			if delay > 0 {
+				time.Sleep(time.Duration(delay) * time.Second)
+			}
 		}
 		if localFile != "-" {
 			fmt.Println("Done.")
@@ -94,7 +102,12 @@ func Download(hubAddress string, username string, localFile string, opts map[str
 func Upload(hubAddress string, localFile string, opts map[string]any) {
 	useSsl, _ := opts["ssl"].(bool)
 
-	hub := fctools.NewFarcasterHub(hubAddress, useSsl)
+	delay, ok := opts["delay"].(int)
+	if !ok {
+		delay = 0
+	}
+
+	hub := fctools.NewFarcasterHub(hubAddress, useSsl, opts["hub-api-key"].(string))
 	defer hub.Close()
 
 	signerPrivateKey, _ := opts["signer"].(string)
@@ -154,6 +167,9 @@ func Upload(hubAddress string, localFile string, opts map[string]any) {
 				successCount += 1
 				fmt.Print("\033[2K\r")
 				fmt.Printf("%s Uploaded", hash)
+			}
+			if delay > 0 {
+				time.Sleep(time.Duration(delay) * time.Second)
 			}
 		}
 	}

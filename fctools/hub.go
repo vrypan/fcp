@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"time"
 
 	//"time"
 	"crypto/ed25519"
@@ -21,6 +20,21 @@ import (
 
 const FARCASTER_EPOCH int64 = 1609459200
 
+func apiKeyInterceptor(header, value string) grpc.UnaryClientInterceptor {
+	return func(
+		ctx context.Context,
+		method string,
+		req, reply interface{},
+		cc *grpc.ClientConn,
+		invoker grpc.UnaryInvoker,
+		opts ...grpc.CallOption,
+	) error {
+		md := metadata.Pairs(header, value)
+		ctx = metadata.NewOutgoingContext(ctx, md)
+		return invoker(ctx, method, req, reply, cc, opts...)
+	}
+}
+
 type FarcasterHub struct {
 	hubAddr    string
 	conn       *grpc.ClientConn
@@ -35,6 +49,7 @@ func (f *FarcasterHub) Client() pb.HubServiceClient {
 func NewFarcasterHub(
 	hubAddress string,
 	useSsl bool,
+	apiKey string,
 ) *FarcasterHub {
 
 	hubRpcEndpoint := hubAddress
@@ -46,12 +61,24 @@ func NewFarcasterHub(
 		creds = insecure.NewCredentials()
 	}
 
-	conn, err := grpc.Dial(hubRpcEndpoint, grpc.WithTransportCredentials(creds), grpc.WithDefaultServiceConfig(`{"loadBalancingPolicy":"round_robin"}`))
+	var interceptor grpc.UnaryClientInterceptor
+
+	if apiKey != "" {
+		interceptor = apiKeyInterceptor("x-api-key", apiKey)
+	}
+
+	conn, err := grpc.Dial(
+		hubRpcEndpoint,
+		grpc.WithTransportCredentials(creds),
+		grpc.WithUnaryInterceptor(interceptor),
+		grpc.WithDefaultCallOptions(grpc.MaxCallRecvMsgSize(20*1024*1024)),
+	)
+
 	if err != nil {
 		log.Fatalf("failed to initialize gRPC connection: %v", err)
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithCancel(context.Background())
 
 	client := pb.NewHubServiceClient(conn)
 

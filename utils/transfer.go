@@ -37,7 +37,7 @@ func Download(hubAddress string, username string, localFile string, opts map[str
 	} else {
 		fid = retrievedFid
 	}
-	fmt.Println("Downloading data for FID:", fid)
+	fmt.Fprintln(os.Stderr, "Downloading data for FID:", fid)
 	var err error
 	var outfile *os.File
 	if localFile == "-" {

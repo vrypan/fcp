@@ -2,6 +2,7 @@ package utils
 
 import (
 	"encoding/binary"
+	"io"
 	"os"
 
 	"github.com/vrypan/farcaster-go/farcaster"
@@ -32,14 +33,14 @@ func ReadData(f *os.File, opts map[string]any) (*farcaster.MessagesResponse, err
 		return nil, err
 	}
 	data := make([]byte, length)
-	_, err = f.Read(data)
+	_, err = io.ReadFull(f, data)
 	if err != nil {
 		return nil, err
 	}
 
 	err = proto.Unmarshal(data, &messages)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
-	return &messages, err
+	return &messages, nil
 }

@@ -38,6 +38,7 @@ func Inspect(filename string, opts map[string]any) {
 			if err == io.EOF {
 				break
 			}
+			fmt.Fprintf(os.Stderr, "Error reading data: %v\n", err)
 			return
 		}
 		count += len(messages.Messages)

@@ -20,23 +20,23 @@ Copy data from/to a farcaster hub
 
 - Copy fname's casts, reactions and links from your hub to a local file:
   ```
-  fcp fc://hubble.local:2283/fname localfile.data
+  fcp fc://hub.local:3383/fname localfile.data
   ```
 
 - Upload the local file to your hub:
   ```
-  fcp localfile.data fc://hubble.local:2283
+  fcp localfile.data fc://hub.local:3383
   ```
 (It will fail, because the messages already exist in the hub)
 
 - Use fc+ssl if the hub is using SSL:
   ```
-  fcp fc+ssl://hubble.local:2283/fname localfile.data
+  fcp fc+ssl://hub.local:3383/fname localfile.data
   ```
 
 - Re-sign messages with a new signer before uploading:
   ```
-  fcp local.data fc+ssl://hubble.local:2283/fname --app-key=0x...
+  fcp local.data fc+ssl://hub.local:3383/fname --app-key=0x...
   ```
 
 ### Examining local files

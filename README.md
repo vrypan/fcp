@@ -14,6 +14,14 @@ Copy data from/to a farcaster hub
   brew install vrypan/tap/fcp
   ```
 
+> [!WARNING]
+> The homebrew tap has changed since v1.1.2. If you have alread installed a version <=1.1.1 do
+> ```
+> brew uninstall fcp
+> brew untap vrypan/fcp
+> brew tap vrypan/tap
+> brew install vrypan/tap/fcp
+
 ## Use
 
 - `fcp --help` to see all options.

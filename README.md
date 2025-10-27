@@ -11,7 +11,7 @@ Copy data from/to a farcaster hub
 - From source: Clone the repo, and run `make`. Copy the generated binaries `fcp` and `fcp-inspect` to a location in your $PATH.
 - macOS/Homebrew:
   ```
-  brew install vrypan/fcp/fcp
+  brew install vrypan/tap/fcp
   ```
 
 ## Use

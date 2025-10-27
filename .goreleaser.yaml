@@ -68,6 +68,6 @@ brews:
       system "#{bin}/fcp-inspect --version"
     repository:
       owner: vrypan
-      name: homebrew-fcp
+      name: homebrew-tap
       branch: main
       token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
